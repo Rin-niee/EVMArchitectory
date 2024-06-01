@@ -1,0 +1,10 @@
+id 1000-1024
+mov pc, r0
+dec r0
+dec r0
+mov r0, r1
+add #26, r1
+mov #13, r2
+mov (r0)+, (r1)+
+sob r2, 1020
+inc r5

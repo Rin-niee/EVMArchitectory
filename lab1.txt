@@ -1,0 +1,21 @@
+id 1000-1046
+mov #2000, r3
+inc r0
+inc r1
+mov r0, (r3)+
+mov r0, (r3)+
+add r0, r2
+mov r1, r0
+add r1, r2
+mov r2, r1
+mov r2, (r3)+
+clr r2
+cmp r3, #2060
+bne 1014
+clr r0
+clr r1
+clr r2
+clr r3
+halt
+run 1000
+e 2000-2060
