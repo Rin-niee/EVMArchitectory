@@ -1,9 +1,9 @@
-#include <stdio.h>
-
 extern void calculate_and_print(int arr[], int size); // Declare the NASM function
 
 void print_numbers(int arr[], int size) {
     for (int i = 0; i < size; i++) {
+        // Manually define the printf function prototype
+        extern int printf(const char *format, ...);
         printf("%d ", arr[i]);
     }
     printf("\n");
