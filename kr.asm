@@ -62,3 +62,24 @@ int_to_string:
 
     inc edi              ; Переместить указатель на первый символ числа
     ret
+
+
+section .data
+    msg db 'Hello, World!', 0xA    ; Строка для вывода с символом новой строки
+    len equ $ - msg                ; Длина строки
+
+section .text
+    global _start
+
+_start:
+    ; Вывести строку
+    mov eax, 4         ; sys_write
+    mov ebx, 1         ; stdout
+    mov ecx, msg       ; указатель на строку
+    mov edx, len       ; длина строки
+    int 0x80           ; системный вызов
+
+    ; Завершить программу
+    mov eax, 1         ; sys_exit
+    xor ebx, ebx       ; код возврата 0
+    int 0x80           ; системный вызов
