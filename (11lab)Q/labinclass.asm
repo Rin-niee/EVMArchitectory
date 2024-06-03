@@ -62,7 +62,7 @@ print_loop:
     ; Print the element
     push eax
     call print_int
-    pop eax
+    add esp, 4            ; Clean up stack
 
     ; Print newline
     mov eax, 4            ; syscall number for sys_write
@@ -82,30 +82,29 @@ end_program:
 
 print_int:
     ; Print integer value in eax
-    ; This function assumes that the integer value is in eax
-    ; and that there are no leading zeros in the value.
-
     pusha                 ; Save all registers
-    mov ebx, 10           ; Base 10
-    xor ecx, ecx          ; Clear digit count
+    mov ebx, eax          ; Move value to ebx for printing
+    mov ecx, 10           ; Set counter to 10 (for base 10)
+    xor esi, esi          ; Clear esi
 
 print_int_loop:
     xor edx, edx          ; Clear edx for division
-    div ebx               ; Divide eax by 10
+    div ecx               ; Divide eax by 10
     add dl, '0'           ; Convert remainder to ASCII
     push edx              ; Push ASCII character onto stack
-    inc ecx               ; Increment digit count
+    inc esi               ; Increment digit count
     test eax, eax         ; Check if quotient is zero
-    jnz print_int_loop    ; If not, continue loop
+    jnz print_int_loop    ; If not zero, continue loop
 
 print_digits:
     pop eax               ; Pop ASCII character from stack
-    mov [esp+ecx-1], al   ; Store character in buffer
-    loop print_digits     ; Loop until all digits are printed
+    mov [esp+esi-1], al   ; Store character in buffer
+    dec esi               ; Decrement esi
+    jnz print_digits      ; Loop until all digits are printed
 
     mov eax, 4            ; syscall number for sys_write
     mov ebx, 1            ; file descriptor 1 (stdout)
-    lea ecx, [esp+ecx]    ; address of buffer
+    lea ecx, [esp]        ; address of buffer
     mov edx, 1            ; number of bytes to write (1 byte per digit)
     int 0x80              ; Call kernel
 
