@@ -8,6 +8,9 @@ section .text
     global _start
 
 _start:
+    ; Пример: Задать значение регистра ECX
+    mov ecx, 12345 ; Здесь задается значение регистра ECX
+
     ; Копируем содержимое регистра ECX в EAX
     mov eax, ecx
 
@@ -54,7 +57,7 @@ print_digits:
     ; Завершаем выполнение программы
     mov eax, 1            ; sys_exit
     xor ebx, ebx          ; статус выхода 0
-    int 0x80   
+    int 0x80              ; вызов сист
 
 
 
