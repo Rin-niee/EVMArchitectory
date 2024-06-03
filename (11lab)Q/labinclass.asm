@@ -2,8 +2,7 @@ section .bss
     arr resd 10000      ; Reserve space for 10000 integers (array)
 
 section .data
-    fmt db "%d ", 0     ; Format string for printf
-    newline db 10, 0     ; Newline character
+    newline db 10       ; Newline character
 
 section .text
     global _start
@@ -70,6 +69,7 @@ print_loop:
     mov ebx, eax
     call print_int
 
+    ; Print newline character
     mov eax, 4            ; syscall number for sys_write
     mov ebx, 1            ; file descriptor 1 (stdout)
     mov ecx, newline      ; address of newline character
@@ -85,36 +85,48 @@ end_program:
     xor ebx, ebx          ; exit code 0
     int 0x80
 
-    print_int:
+print_int:
     ; Print integer value in ebx
     ; This function assumes that the integer value is in ebx
     ; and that there are no leading zeros in the value.
     
-    mov ecx, 10           ; Set counter to 10 (for 10 digits)
-    xor esi, esi          ; Clear esi for division
-    
-.loop:
-    mov eax, ebx          ; Move value to eax for division
-    mov edx, 0            ; Clear edx for division
-    div ecx               ; Divide value in eax by 10
-    add dl, '0'           ; Convert remainder to ASCII
-    push edx              ; Push ASCII character to stack
-    dec esi               ; Increment counter
-    
-    test eax, eax         ; Check if quotient is zero
-    jnz .loop             ; If not zero, continue looping
-    
-.print_loop:
-    pop eax               ; Pop ASCII character from stack
-    mov [esp+esi], al     ; Store character in buffer
-    inc esi               ; Move to next character in buffer
-    test esi, esi         ; Check if all characters are printed
-    jnz .print_loop       ; If not printed, continue printing
-    
+    ; Check if ebx is zero
+    test ebx, ebx
+    jnz .print_non_zero
+    ; If ebx is zero, print '0'
     mov eax, 4            ; syscall number for sys_write
     mov ebx, 1            ; file descriptor 1 (stdout)
-    mov ecx, esp          ; address of buffer
-    mov edx, 10           ; number of bytes to write (10 bytes for 10 digits)
+    mov ecx, zero         ; address of zero character
+    mov edx, 1            ; number of bytes to write
     int 0x80              ; Call kernel
-    
     ret
+
+.print_non_zero:
+    ; Initialize
+    mov ecx, 0            ; Digit counter
+    mov edi, esp          ; Store digits on the stack
+
+.convert_loop:
+    xor edx, edx          ; Clear edx for division
+    div dword 10          ; Divide ebx by 10
+    add dl, '0'           ; Convert remainder to ASCII
+    dec edi               ; Move stack pointer down
+    mov [edi], dl         ; Store digit
+    inc ecx               ; Increment digit counter
+    test eax, eax         ; Check if quotient is zero
+    jnz .convert_loop     ; If not zero, continue loop
+
+.print_loop:
+    ; Print each digit
+    mov eax, 4            ; syscall number for sys_write
+    mov ebx, 1            ; file descriptor 1 (stdout)
+    mov edx, 1            ; number of bytes to write (1 byte per digit)
+    mov ecx, edi          ; address of current digit
+    int 0x80              ; Call kernel
+    inc edi               ; Move to next digit
+    loop .print_loop      ; Repeat for all digits
+
+    ret                   ; Return from subroutine
+
+section .data
+zero db '0'  
