@@ -92,4 +92,4 @@ end_printing:
     ret
 
 section .data
-    fmt db "%d ", 0     ; Format string for printf
+    fmt db "%d ", 0    
