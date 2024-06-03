@@ -84,3 +84,37 @@ end_program:
     mov eax, 1            ; syscall number for exit
     xor ebx, ebx          ; exit code 0
     int 0x80
+
+    print_int:
+    ; Print integer value in ebx
+    ; This function assumes that the integer value is in ebx
+    ; and that there are no leading zeros in the value.
+    
+    mov ecx, 10           ; Set counter to 10 (for 10 digits)
+    xor esi, esi          ; Clear esi for division
+    
+.loop:
+    mov eax, ebx          ; Move value to eax for division
+    mov edx, 0            ; Clear edx for division
+    div ecx               ; Divide value in eax by 10
+    add dl, '0'           ; Convert remainder to ASCII
+    push edx              ; Push ASCII character to stack
+    dec esi               ; Increment counter
+    
+    test eax, eax         ; Check if quotient is zero
+    jnz .loop             ; If not zero, continue looping
+    
+.print_loop:
+    pop eax               ; Pop ASCII character from stack
+    mov [esp+esi], al     ; Store character in buffer
+    inc esi               ; Move to next character in buffer
+    test esi, esi         ; Check if all characters are printed
+    jnz .print_loop       ; If not printed, continue printing
+    
+    mov eax, 4            ; syscall number for sys_write
+    mov ebx, 1            ; file descriptor 1 (stdout)
+    mov ecx, esp          ; address of buffer
+    mov edx, 10           ; number of bytes to write (10 bytes for 10 digits)
+    int 0x80              ; Call kernel
+    
+    ret
