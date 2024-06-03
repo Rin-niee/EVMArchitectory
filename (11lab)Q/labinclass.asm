@@ -3,6 +3,7 @@ section .bss
 
 section .data
     fmt db "%d ", 0     ; Format string for printf
+    newline db 10, 0     ; Newline character
 
 section .text
     global _start
@@ -69,6 +70,12 @@ print_loop:
     mov ebx, eax
     call print_int
 
+    mov eax, 4            ; syscall number for sys_write
+    mov ebx, 1            ; file descriptor 1 (stdout)
+    mov ecx, newline      ; address of newline character
+    mov edx, 1            ; number of bytes to write (1 byte for newline)
+    int 0x80              ; Call kernel
+
     inc ecx
     jmp print_loop
 
@@ -108,4 +115,4 @@ print_int:
     dec edx               ; Decrement counter
     jnz .print_loop       ; If counter is not zero, continue printing
 
-    ret  
+    ret   
