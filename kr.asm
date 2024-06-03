@@ -13,28 +13,18 @@ _start:
     ; Преобразовать ECX в строку
     call int_to_string
 
-    ; Вычислить длину строки
-    mov edi, buffer     ; Начало строки
-    xor ecx, ecx        ; Сбросить счетчик
-.count_length:
-    cmp byte [edi + ecx], 0 ; Проверить на null-терминатор
-    je .done_counting       ; Если null, то конец строки
-    inc ecx                 ; Увеличить счетчик
-    jmp .count_length
-.done_counting:
-
     ; Вывести строку
     mov eax, 4          ; sys_write
     mov ebx, 1          ; stdout
-    mov edx, ecx        ; длина строки
-    mov ecx, buffer     ; указатель на буфер
+    mov edx, buffer     ; указатель на буфер
+    mov ecx, 12         ; максимальная длина строки (включая null-терминатор)
     int 0x80            ; системный вызов
 
     ; Вывести символ новой строки
     mov eax, 4          ; sys_write
     mov ebx, 1          ; stdout
-    mov ecx, newline    ; указатель на символ новой строки
     mov edx, 1          ; длина строки
+    mov ecx, newline    ; указатель на символ новой строки
     int 0x80            ; системный вызов
 
     ; Завершить программу
@@ -48,6 +38,7 @@ int_to_string:
     mov byte [edi], 0    ; Null-терминатор
     dec edi
 
+    mov eax, ecx         ; Копируем значение из ECX в EAX
     mov ebx, 10          ; Основа деления (десятичная система)
 
 .convert_loop:
@@ -60,5 +51,4 @@ int_to_string:
     jnz .convert_loop    ; Если нет, продолжить цикл
 
     inc edi              ; Переместить указатель на первый символ числа
-    mov eax, edi         ; Установить eax на начало строки
     ret
