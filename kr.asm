@@ -13,18 +13,28 @@ _start:
     ; Преобразовать ECX в строку
     call int_to_string
 
+    ; Вычислить длину строки
+    mov edi, buffer     ; Начало строки
+    xor ecx, ecx        ; Сбросить счетчик
+.count_length:
+    cmp byte [edi + ecx], 0 ; Проверить на null-терминатор
+    je .done_counting       ; Если null, то конец строки
+    inc ecx                 ; Увеличить счетчик
+    jmp .count_length
+.done_counting:
+
     ; Вывести строку
     mov eax, 4          ; sys_write
     mov ebx, 1          ; stdout
-    mov edx, buffer     ; указатель на буфер
-    mov ecx, 12         ; максимальная длина строки (включая null-терминатор)
+    mov edx, ecx        ; длина строки
+    mov ecx, buffer     ; указатель на буфер
     int 0x80            ; системный вызов
 
     ; Вывести символ новой строки
     mov eax, 4          ; sys_write
     mov ebx, 1          ; stdout
-    mov edx, 1          ; длина строки
     mov ecx, newline    ; указатель на символ новой строки
+    mov edx, 1          ; длина строки
     int 0x80            ; системный вызов
 
     ; Завершить программу
