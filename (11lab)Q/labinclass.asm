@@ -9,7 +9,8 @@ _start:
     mov esi, 1           ; t[n-1]
     mov edi, 1           ; t[n-2]
     mov ebx, 1           ; t[n-3]
-    mov edx, 9           ; количество чисел, которые нужно вывести
+    mov edx, 10          ; количество чисел, которые нужно вывести
+    mov ebp, esp         ; сохраняем указатель на стек
 
 calculate_next:
     ; Считаем следующее число по алгоритму
@@ -28,14 +29,23 @@ calculate_next:
     mov ecx, [edi + eax*4]
     add ebx, ecx
 
-    ; Выводим число на консоль
-    mov eax, esi
+    ; Сохраняем новое число на стеке
+    mov [esp], esi
+    sub esp, 4
+
+    dec ecx             ; уменьшаем счётчик вывода чисел
+    jnz calculate_next  ; если не выведены все числа, продолжаем
+
+    ; Выводим последние 10 чисел с вершины стека на консоль
+print_last_10:
+    mov eax, [esp]      ; берём число с вершины стека
     mov ebx, 1
     mov ecx, output_format
     int 0x80
 
-    dec edx
-    jnz calculate_next
+    add esp, 4          ; перемещаем указатель на следующее число на стеке
+    dec edx             ; уменьшаем счётчик выведенных чисел
+    jnz print_last_10   ; если не выведены все числа, продолжаем
 
 exit:
     mov eax, 1
