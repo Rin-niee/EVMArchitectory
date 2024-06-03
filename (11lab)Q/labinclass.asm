@@ -62,110 +62,85 @@ end:
 
 
 
-section .data 
-    t times 10000 dq 0          ; массив для хранения значений последовательности
-    format db "%d ", 0
-
 section .bss
-    output resb 100             ; буфер для вывода
+    arr resd 10000      ; Reserve space for 10000 integers (array)
+
+section .data
+    fmt db "%d ", 0     ; Format string for printf
 
 section .text
-    extern printf
     global _start
+    extern printf
 
 _start:
-    ; Инициализация первых трех значений последовательности
-    mov qword [t], 1            ; t[0] = 1
-    mov qword [t + 8], 2        ; t[1] = 2
-    mov qword [t + 16], 3       ; t[2] = 3
+    ; Initialize the first three elements of the array
+    mov dword [arr], 1
+    mov dword [arr+4], 1
+    mov dword [arr+8], 1
 
-    ; Вычисление последовательности
-    mov rsi, 3                  ; начинаем с t[3]
-loop:
-    cmp rsi, 10000              ; сравниваем с лимитом
-    jge end_loop                ; если rsi >= 10000, выходим из цикла
+    ; Calculate the rest of the array
+    mov ecx, 3            ; Start from the 4th element (index 3)
+calc_loop:
+    cmp ecx, 10000        ; Compare loop counter with 10000
+    jge print_result      ; If we've calculated 10000 elements, jump to printing
 
-    mov rax, rsi
-    sub rax, 1
-    mov rbx, qword [t + 8*rax]  ; rbx = t[n-1]
+    ; Calculate t[n-1], t[n-2], and t[n-3]
+    mov eax, [arr + ecx*4 - 4]
+    mov ebx, [arr + ecx*4 - 8]
+    mov edx, [arr + ecx*4 - 12]
 
-    mov rcx, rsi
-    sub rcx, rbx
-    mov rcx, qword [t + 8*rcx]  ; rcx = t[n - t[n-1]]
+    ; Calculate n - t[n-1], n-1 - t[n-2], and n-2 - t[n-3]
+    sub ecx, eax          ; ecx = n - t[n-1]
+    mov esi, ecx
+    add ecx, eax          ; Restore ecx
 
-    mov rax, rsi
-    sub rax, 1
-    sub rax, 1
-    mov rbx, qword [t + 8*rax]  ; rbx = t[n-2]
+    dec ecx
+    sub ecx, ebx          ; ecx = n-1 - t[n-2]
+    mov edi, ecx
+    add ecx, ebx          ; Restore ecx
 
-    mov rdx, rsi
-    sub rdx, 1
-    sub rdx, rbx
-    mov rdx, qword [t + 8*rdx]  ; rdx = t[n-1 - t[n-2]]
+    sub ecx, 2
+    sub ecx, edx          ; ecx = n-2 - t[n-3]
+    mov ebp, ecx
+    add ecx, 2
+    add ecx, edx          ; Restore ecx
 
-    mov rax, rsi
-    sub rax, 1
-    sub rax, 1
-    sub rax, 1
-    mov rbx, qword [t + 8*rax]  ; rbx = t[n-3]
+    ; Calculate t[n - t[n-1]], t[n-1 - t[n-2]], t[n-2 - t[n-3]]
+    mov eax, [arr + esi*4]
+    mov ebx, [arr + edi*4]
+    mov edx, [arr + ebp*4]
 
-    mov rdi, rsi
-    sub rdi, 2
-    sub rdi, rbx
-    mov rax, qword [t + 8*rdi]  ; rax = t[n-2 - t[n-3]]
+    ; Calculate the current value
+    add eax, ebx
+    add eax, edx
 
-    add rax, rcx
-    add rax, rdx
-    mov qword [t + 8*rsi], rax  ; t[n] = t[n - t[n-1]] + t[n-1 - t[n-2]] + t[n-2 - t[n-3]]
+    ; Store the result in the array
+    mov [arr + ecx*4], eax
 
-    inc rsi
-    jmp loop
+    inc ecx
+    jmp calc_loop
 
-end_loop:
-    ; Подготовка к выводу последних 10 значений
-    mov rsi, 9990               ; начинаем с t[9990]
-    mov rcx, 10                 ; выводим последние 10 значений
-
+print_result:
+    ; Print the last 10 elements
+    mov ecx, 9990         ; Start printing from the 9991st element
 print_loop:
-    mov rax, [t + 8*rsi]        ; загружаем значение
-    ; Конвертируем число в строку и сохраняем в буфер
-    mov rdi, output             ; указатель на буфер
-    mov rbx, rax                ; сохраняем значение для использования в следующей итерации
-    call int_to_str
-    ; Выводим строку
-    mov rax, 1                  ; системный вызов sys_write
-    mov rdi, 1                  ; дескриптор stdout
-    mov rsi, output             ; указатель на буфер
-    mov rdx, 100                ; длина буфера
-    syscall
+    cmp ecx, 10000        ; Print 10 elements
+    jge end_program
 
-    inc rsi                     ; перейти к следующему значению
-    loop print_loop             ; повторить, если не 0
+    ; Get the current element
+    mov eax, [arr + ecx*4]
 
-end:
-    ; Завершение программы
-    mov rax, 60                 ; системный вызов для завершения программы
-    xor rdi, rdi                ; код возврата 0
-    syscall
+    ; Print the element
+    push eax
+    push fmt
+    call printf
+    add esp, 8            ; Clean up the stack
 
-; Функция для конвертации числа в строку
-; Вход: rbx - число, rdi - указатель на буфер
-int_to_str:
-    mov rax, rbx                ; число для конвертации
-    mov rcx, 10                 ; делитель
-    mov rbx, 0                  ; обнуление регистра для накопления результата
-    mov rdx, 0                  ; обнуление регистра для деления
-    mov rdi, output             ; указатель на буфер
+    inc ecx
+    jmp print_loop
 
-    add rdi, 99                 ; указываем на конец буфера
-    mov byte [rdi], 0           ; добавляем нуль-терминатор
-
-convert_loop:
-    dec rdi                     ; сдвигаемся к следующему символу
-    div rcx                     ; делим rax на 10, результат в rax, остаток в rdx
-    add dl, '0'                 ; конвертируем остаток в символ
-    mov [rdi], dl               ; сохраняем символ в буфер
-    test rax, rax               ; проверяем, не равно ли число 0
-    jnz convert_loop            ; повторяем, если не равно
-
-    ret  
+end_program:
+    ; Exit the program
+    mov eax, 1            ; syscall number for exit
+    xor ebx, ebx          ; exit code 0
+    int 0x80
