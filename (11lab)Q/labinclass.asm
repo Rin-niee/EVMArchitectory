@@ -1,3 +1,5 @@
+comma, decorator or end of line expected, got 45
+
 extern void calculate_and_print(int arr[], int size); // Declare the NASM function
 
 void print_numbers(int arr[], int size) {
