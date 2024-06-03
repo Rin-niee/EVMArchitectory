@@ -58,3 +58,86 @@ end:
     mov rax, 60
     xor rdi, rdi
     syscall
+
+
+
+
+section .data 
+    t times 10000 dq 0          ; массив для хранения значений последовательности
+    format db "%d ", 0
+
+section .bss
+    output resb 100             ; буфер для вывода
+
+section .text
+    extern printf
+    global _start
+
+_start:
+    ; Инициализация первых трех значений последовательности
+    mov qword [t], 1            ; t[0] = 1
+    mov qword [t + 8], 2        ; t[1] = 2
+    mov qword [t + 16], 3       ; t[2] = 3
+
+    ; Вычисление последовательности
+    mov rsi, 3                  ; начинаем с t[3]
+loop:
+    cmp rsi, 10000              ; сравниваем с лимитом
+    jge end_loop                ; если rsi >= 10000, выходим из цикла
+
+    mov rax, rsi
+    sub rax, 1
+    mov rbx, qword [t + 8*rax]  ; rbx = t[n-1]
+
+    mov rcx, rsi
+    sub rcx, rbx
+    mov rcx, qword [t + 8*rcx]  ; rcx = t[n - t[n-1]]
+
+    mov rax, rsi
+    sub rax, 1
+    sub rax, 1
+    mov rbx, qword [t + 8*rax]  ; rbx = t[n-2]
+
+    mov rdx, rsi
+    sub rdx, 1
+    sub rdx, rbx
+    mov rdx, qword [t + 8*rdx]  ; rdx = t[n-1 - t[n-2]]
+
+    mov rax, rsi
+    sub rax, 1
+    sub rax, 1
+    sub rax, 1
+    mov rbx, qword [t + 8*rax]  ; rbx = t[n-3]
+
+    mov rdi, rsi
+    sub rdi, 2
+    sub rdi, rbx
+    mov rax, qword [t + 8*rdi]  ; rax = t[n-2 - t[n-3]]
+
+    add rax, rcx
+    add rax, rdx
+    mov qword [t + 8*rsi], rax  ; t[n] = t[n - t[n-1]] + t[n-1 - t[n-2]] + t[n-2 - t[n-3]]
+
+    inc rsi
+    jmp loop
+
+end_loop:
+    ; Подготовка к выводу последних 10 значений
+    mov rsi, 9990               ; начинаем с t[9990]
+    mov rcx, 10                 ; выводим последние 10 значений
+
+print_loop:
+    mov rax, [t + 8*rsi]        ; загружаем значение
+    mov rdi, format             ; строка формата для вывода
+    mov rsi, rax                ; значение для печати
+    xor rax, rax                ; очистить rax для вызова printf
+    call printf                 ; вызвать printf
+
+    inc rsi                     ; перейти к следующему значению
+    loop print_loop             ; повторить, если не 0
+
+end:
+    ; Завершение программы
+    mov rax, 60                 ; системный вызов для завершения программы
+    xor rdi, rdi                ; код возврата 0
+    syscall
