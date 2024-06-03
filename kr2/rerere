@@ -1,0 +1,63 @@
+section .data
+    pi dq 3.14159265358979323846264338327950288419716939937510
+    degree_to_rad dq 0.01745329251994329576923690768488612713442871888542 ; pi / 180
+
+section .bss
+    alpha resq 1
+    value resq 1
+
+section .text
+    global getsin
+
+getsin:
+    ; Load alpha (angle in degrees) into st(0)
+    fld qword [alpha]
+
+    ; Convert degrees to radians
+    ; Multiply st(0) by degree_to_rad (pi / 180)
+    fld qword [degree_to_rad]
+    fmul
+
+    ; Calculate sine of st(0) and store result in st(0)
+    fsin
+
+    ; Store the result in value
+    fstp qword [value]
+
+    ; Return to caller
+    ret
+
+extern double alpha, value;
+void getsin();
+
+int main(int ac, char *av[])
+{
+    int i;
+    for (i = 0; i < 361; i++)
+    {
+        alpha = i;
+        getsin();
+        printf("%4d %13.7f\n", i, value);
+    }
+    return 0;
+}
+
+Компилируйте программу на C:
+
+ш
+
+Копировать код
+gcc -o sin_program sin_program.c sin_program.o -lm
+Компилируйте программу на ассемблере NASM:
+
+ш
+
+Копировать код
+nasm -f elf64 sin_program.asm
+Соберите объектные файлы:
+
+ш
+
+Копировать код
+gcc -o sin_program sin_program.c sin_program.o -lm
+Эта программа вычисляет и выводит значения синуса для углов от 0 до 360 градусов с шагом в 1 градус.
