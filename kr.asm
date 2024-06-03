@@ -1,5 +1,4 @@
 section .data
-    buffer db '0000000000', 0 ; Буфер для хранения строки с десятичным представлением
     newline db 10 ; Символ новой строки
 
 section .bss
@@ -43,10 +42,6 @@ print_number:
     mov byte [edi], '0'
 
 print_digits:
-    ; Добавляем символ новой строки
-    dec edi
-    mov byte [edi], 10
-
     ; Подсчитываем длину строки
     mov eax, digits + 10
     sub eax, edi
@@ -59,10 +54,17 @@ print_digits:
     ; длина строки уже в EDX
     int 0x80              ; вызов системного прерывания
 
+    ; Выводим символ новой строки
+    mov eax, 4            ; write
+    mov ebx, 1            ; stdout
+    mov ecx, newline      ; указатель на символ новой строки
+    mov edx, 1            ; длина строки
+    int 0x80              ; вызов системного прерывания
+
     ; Завершаем выполнение программы
     mov eax, 1            ; sys_exit
     xor ebx, ebx          ; статус выхода 0
-    int 0x80              ; вызов системного прерывания
+    int 0x80            
 
 section .bss
     buffer resb 12      ; Буфер для строкового представления числа (максимум для 32-битного числа: 10 цифр + знак + null)
@@ -129,6 +131,10 @@ int_to_string:
 
     inc edi              ; Переместить указатель на первый символ числа
     ret
+
+
+
+
 
 
 section .data
