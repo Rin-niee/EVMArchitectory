@@ -84,35 +84,3 @@ end_program:
     mov eax, 1            ; syscall number for exit
     xor ebx, ebx          ; exit code 0
     int 0x80
-
-print_int:
-    ; Print integer value in ebx
-    mov esi, 10           ; Set esi to 10 (for dividing by 10)
-    mov edi, 0            ; Set edi to 0 (for storing digits)
-    mov ecx, 10           ; Set counter to 10 (for 10 digits)
-    mov edx, ebx          ; Move value to edx for division
-.loop:
-    xor eax, eax          ; Clear eax for division
-    div esi               ; Divide value in edx:eax by 10
-    add dl, '0'           ; Convert remainder to ASCII
-    mov [esp+edi], dl     ; Store digit in stack
-    inc edi               ; Move to next digit in stack
-    dec ecx               ; Decrement counter
-    test eax, eax         ; Check if quotient is zero
-    jnz .loop             ; If not zero, continue looping
-
-    ; Print the digits
-    mov edx, edi          ; Set edx to number of digits
-    mov ecx, esp          ; Set ecx to address of first digit
-.print_loop:
-    mov eax, 4            ; syscall number for sys_write
-    mov ebx, 1            ; file descriptor 1 (stdout)
-    mov esi, ecx          ; Set esi to address of current digit
-    mov edi, 1            ; Number of bytes to write (1 byte for 1 digit)
-    int 0x80              ; Call kernel
-
-    inc ecx               ; Move to next digit
-    dec edx               ; Decrement counter
-    jnz .print_loop       ; If counter is not zero, continue printing
-
-    ret   
