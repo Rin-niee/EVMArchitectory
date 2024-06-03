@@ -13,20 +13,21 @@ _start:
     ; Преобразовать ECX в строку
     call int_to_string
 
-    ; Вычислить длину строки
-    mov edi, buffer     ; Начало строки
-    xor ecx, ecx        ; Сбросить счетчик
-.count_length:
-    cmp byte [edi + ecx], 0 ; Проверить на null-терминатор
-    je .done_counting       ; Если null, то конец строки
-    inc ecx                 ; Увеличить счетчик
-    jmp .count_length
-.done_counting:
+    ; Найти длину строки
+    mov edi, buffer
+    xor eax, eax
+.find_length:
+    cmp byte [edi + eax], 0
+    je .print_string
+    inc eax
+    jmp .find_length
 
+.print_string:
     ; Вывести строку
+    mov ebx, eax        ; длина строки в ebx
     mov eax, 4          ; sys_write
     mov ebx, 1          ; stdout
-    mov edx, ecx        ; длина строки
+    mov edx, eax        ; длина строки
     mov ecx, buffer     ; указатель на буфер
     int 0x80            ; системный вызов
 
