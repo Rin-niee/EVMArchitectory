@@ -1,3 +1,62 @@
+section .data
+    buffer db '0000000000', 0 ; Буфер для хранения строки с десятичным представлением
+
+section .bss
+    digits resb 11 ; Буфер для чисел в строковом виде (максимум 10 цифр + нуль-терминатор)
+
+section .text
+    global _start
+
+_start:
+    ; Копируем содержимое регистра ECX в EAX
+    mov eax, ecx
+
+    ; Переменные для работы
+    mov edi, digits + 10 ; Указатель на конец буфера
+    mov byte [edi], 0    ; Нуль-терминатор
+
+convert_to_string:
+    ; Если EAX == 0 и мы уже сконвертировали хотя бы одну цифру, то выход
+    test eax, eax
+    jz print_number
+
+    ; Выделяем последнюю цифру и сохраняем её
+    mov ebx, 10
+    xor edx, edx
+    div ebx                ; EDX = EAX % 10, EAX = EAX / 10
+    add dl, '0'            ; Преобразуем в ASCII
+    dec edi
+    mov [edi], dl
+
+    jmp convert_to_string
+
+print_number:
+    ; Если число было нулевым
+    cmp edi, digits + 10
+    jne print_digits
+    ; Если число 0, добавляем его в буфер
+    dec edi
+    mov byte [edi], '0'
+
+print_digits:
+    ; Подготавливаем параметры для системного вызова write
+    mov eax, 4            ; write
+    mov ebx, 1            ; stdout
+    mov ecx, edi          ; указатель на строку
+    mov edx, digits + 10 - edi ; длина строки
+    int 0x80              ; вызов системного прерывания
+
+    ; Завершаем выполнение программы
+    mov eax, 1            ; sys_exit
+    xor ebx, ebx          ; статус выхода 0
+    int 0x80              ; вызов системного прерывания
+
+
+
+
+
+
+
 section .bss
     buffer resb 12      ; Буфер для строкового представления числа (максимум для 32-битного числа: 10 цифр + знак + null)
 
