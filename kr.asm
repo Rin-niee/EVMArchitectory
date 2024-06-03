@@ -39,19 +39,22 @@ print_number:
     mov byte [edi], '0'
 
 print_digits:
+    ; Подсчитываем длину строки
+    mov eax, digits + 10
+    sub eax, edi
+    mov edx, eax
+
     ; Подготавливаем параметры для системного вызова write
     mov eax, 4            ; write
     mov ebx, 1            ; stdout
     mov ecx, edi          ; указатель на строку
-    mov edx, digits + 10 - edi ; длина строки
+    ; длина строки уже в EDX
     int 0x80              ; вызов системного прерывания
 
     ; Завершаем выполнение программы
     mov eax, 1            ; sys_exit
     xor ebx, ebx          ; статус выхода 0
-    int 0x80              ; вызов системного прерывания
-
-
+    int 0x80   
 
 
 
