@@ -19,13 +19,14 @@ main:
     mov edx, 10000    ; количество элементов
 
 compute_sequence:
-    push ecx          ; сохраним текущее значение ecx на стек
-
     ; t[n - t[n-1]]
     mov eax, ecx
     sub eax, 1
     mov ebx, [t + eax * 4]
     sub eax, ebx
+    js skip1           ; пропустить, если результат отрицательный
+    cmp eax, 0
+    jl skip1
     mov ebx, [t + eax * 4]
 
     ; t[n - 1 - t[n - 2]]
@@ -35,6 +36,9 @@ compute_sequence:
     sub eax, 1
     mov edi, [t + eax * 4]
     sub eax, edi
+    js skip2           ; пропустить, если результат отрицательный
+    cmp eax, 0
+    jl skip2
     add ebx, [t + eax * 4]
 
     ; t[n - 2 - t[n - 3]]
@@ -44,10 +48,15 @@ compute_sequence:
     sub eax, 1
     mov esi, [t + eax * 4]
     sub eax, esi
+    js skip3           ; пропустить, если результат отрицательный
+    cmp eax, 0
+    jl skip3
     add ebx, [t + eax * 4]
 
+skip3:
+skip2:
+skip1:
     ; сохраняем результат
-    pop ecx
     mov [t + ecx * 4], ebx
 
     inc ecx
