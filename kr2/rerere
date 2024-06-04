@@ -1,8 +1,10 @@
-relocation R_X86_64_32S against `.data' can not be used when making a PIE object; recompile with -fPIE
+section .rodata
+    pi dq 3.1415
+    degree_to_rad dq 0.01745; pi / 180
 
 section .data
-    pi dq 3.14
-    degree_to_rad dq 0.017 ; pi / 180
+    global alpha
+    global value
     alpha dq 0
     value dq 0
 
