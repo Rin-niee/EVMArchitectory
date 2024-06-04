@@ -1,3 +1,17 @@
+невозможно найти Scrt1.o: Нет такого файла или каталога
+/usr/bin/ld: невозможно найти crti.o: Нет такого файла или каталога
+/usr/bin/ld: пропускается несовместимый /usr/lib/gcc/x86_64-linux-gnu/11/libgcc.a при поиске -lgcc
+/usr/bin/ld: невозможно найти -lgcc: Нет такого файла или каталога
+/usr/bin/ld: пропускается несовместимый /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 при поиске libgcc_s.so.1
+/usr/bin/ld: невозможно найти libgcc_s.so.1: Нет такого файла или каталога
+/usr/bin/ld: пропускается несовместимый /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 при поиске libgcc_s.so.1
+/usr/bin/ld: пропускается несовместимый /usr/lib/gcc/x86_64-linux-gnu/11/libgcc.a при поиске -lgcc
+/usr/bin/ld: невозможно найти -lgcc: Нет такого файла или каталога
+collect2: error: ld returned 1 exit status
+
+
+
+
 section .bss
     t resd 10000 ; резервируем место для 10000 элементов массива t
 
