@@ -1,9 +1,4 @@
-архитектура i386 входного файла «fibo.o» несовместима с выходным i386:x86-64
-/usr/bin/ld: предупреждение: невозможно найти символ входа _start; используем значение по умолчанию 0000000000401000
-collect2: error: ld returned 1 exit status
-
-
-section .data
+ection .data
     n equ 10000
     array times n dd 0
     format db "%d ", 0
@@ -32,21 +27,21 @@ calc_loop:
     sub eax, 1
     mov ebx, [array + eax*4]   ; a[n-1]
     sub eax, ebx
-    mov ebx, [array + eax*4]   ; a[n - a[n-1]]
+    mov edx, [array + eax*4]   ; a[n - a[n-1]]
 
-    mov edx, ecx
-    sub edx, 2
-    mov esi, [array + edx*4]   ; a[n-2]
-    sub edx, esi
-    add ebx, [array + edx*4]   ; + a[n-1 - a[n-2]]
+    mov eax, ecx
+    sub eax, 2
+    mov ebx, [array + eax*4]   ; a[n-2]
+    sub eax, ebx
+    add edx, [array + eax*4]   ; + a[n-1 - a[n-2]]
 
-    mov esi, ecx
-    sub esi, 3
-    mov edi, [array + esi*4]   ; a[n-3]
-    sub esi, edi
-    add ebx, [array + esi*4]   ; + a[n-2 - a[n-3]]
+    mov eax, ecx
+    sub eax, 3
+    mov ebx, [array + eax*4]   ; a[n-3]
+    sub eax, ebx
+    add edx, [array + eax*4]   ; + a[n-2 - a[n-3]]
 
-    mov [array + ecx*4], ebx   ; store the result
+    mov [array + ecx*4], edx   ; store the result
 
     jmp calc_loop
 
