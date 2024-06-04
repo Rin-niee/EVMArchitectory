@@ -11,8 +11,8 @@ section .text
 main:
     ; инициализируем первые три элемента массива
     mov dword [t], 0
-    mov dword [t+4], 0
-    mov dword [t+8], 1
+    mov dword [t + 4], 0
+    mov dword [t + 8], 1
 
     ; цикл для вычисления последовательности
     mov ecx, 3        ; начинаем с t[3]
@@ -24,9 +24,11 @@ compute_sequence:
     sub eax, 1
     mov ebx, [t + eax * 4]
     sub eax, ebx
-    js skip1           ; пропустить, если результат отрицательный
+    js skip1           ; пропустить, если результат отрицательный или выходит за границы
     cmp eax, 0
     jl skip1
+    cmp eax, 9999
+    jg skip1
     mov ebx, [t + eax * 4]
 
     ; t[n - 1 - t[n - 2]]
@@ -36,9 +38,11 @@ compute_sequence:
     sub eax, 1
     mov edi, [t + eax * 4]
     sub eax, edi
-    js skip2           ; пропустить, если результат отрицательный
+    js skip2           ; пропустить, если результат отрицательный или выходит за границы
     cmp eax, 0
     jl skip2
+    cmp eax, 9999
+    jg skip2
     add ebx, [t + eax * 4]
 
     ; t[n - 2 - t[n - 3]]
@@ -48,9 +52,11 @@ compute_sequence:
     sub eax, 1
     mov esi, [t + eax * 4]
     sub eax, esi
-    js skip3           ; пропустить, если результат отрицательный
+    js skip3           ; пропустить, если результат отрицательный или выходит за границы
     cmp eax, 0
     jl skip3
+    cmp eax, 9999
+    jg skip3
     add ebx, [t + eax * 4]
 
 skip3:
