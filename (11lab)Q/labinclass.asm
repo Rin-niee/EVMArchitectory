@@ -70,6 +70,13 @@ print_loop:
     mov rdx, 20                     ; максимальная длина строки
     syscall
 
+    ; вывод новой строки
+    mov rax, 1                      ; syscall write
+    mov rdi, 1                      ; дескриптор файла (stdout)
+    mov rsi, newline                ; буфер новой строки
+    mov rdx, 1                      ; длина новой строки
+    syscall
+
     add rsi, 8                      ; переходим к следующему числу для вывода
     dec rcx                         ; уменьшаем счетчик чисел для вывода
     jnz print_loop                  ; повторяем цикл, если не закончили вывод
@@ -85,6 +92,9 @@ exit_program:
 int_to_str:
     mov rcx, 10                     ; основание числа
     mov rbx, rdi                    ; сохраняем адрес буфера
+    mov rdi, rbx
+    add rdi, 20                     ; указываем на конец буфера
+    mov byte [rdi], 0               ; добавляем нулевой байт в конец строки
 
 convert_loop:
     xor rdx, rdx                    ; очищаем rdx для div
