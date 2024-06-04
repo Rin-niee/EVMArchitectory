@@ -55,24 +55,20 @@ print_last_ten:
 print_loop:
     mov rax, 1                      ; используем вызов syscall для вывода на консоль
     mov rdi, 1                      ; дескриптор файла (stdout)
-    mov rdx, 1                      ; количество байт для вывода (в данном случае 1 число)
-    mov rax, 60                     ; syscall для выхода из программы
+    mov rdx, qword [rsi]            ; количество байт для вывода (в данном случае 1 число)
+    mov rax, 1                      ; syscall для записи в stdout
     syscall
 
+    mov rsi, [rsi + 8]              ; переходим к следующему числу для вывода
     dec ecx                         ; уменьшаем счетчик чисел для вывода
     cmp ecx, 0                      ; проверяем, закончили ли вывод всех чисел
     je exit_program
-    mov rax, rsi                    ; загружаем следующее число для вывода
-    sub rsi, 8                      ; переходим к предыдущему числу
     jmp print_loop
 
 exit_program:
     mov rax, 60                     ; syscall для выхода из программы
     xor rdi, rdi                    ; код возврата 0
     syscall
-
-
-
 
 
 
