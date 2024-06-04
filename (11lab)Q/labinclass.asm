@@ -1,53 +1,75 @@
-section .data
-    output_format db "%d ", 0
-
 section .text
-    global _start
+global calculate_and_print
 
-_start:
-    mov ecx, 10000       ; количество чисел, которые нужно вычислить
-    mov esi, 1           ; t[n-1]
-    mov edi, 1           ; t[n-2]
-    mov ebx, 1           ; t[n-3]
-    mov edx, 10          ; количество чисел, которые нужно вывести
-    mov ebp, esp         ; сохраняем указатель на стек
+calculate_and_print:
+    ; Arguments:
+    ; [esp + 4] = pointer to the array
+    ; [esp + 8] = size of the array
 
-calculate_next:
-    ; Считаем следующее число по алгоритму
-    mov eax, esi
-    sub eax, edi
-    mov ecx, [ebx + eax*4]
-    add esi, ecx
+    ; Initialize the first three elements of the array
+    mov dword [esp + 4], 1
+    mov dword [esp + 8], 1
+    mov dword [esp + 12], 1
 
-    mov eax, edi
-    sub eax, ebx
-    mov ecx, [esi + eax*4]
-    add edi, ecx
+    ; Calculate the rest of the array
+    mov ecx, 3            ; Start from the 4th element (index 3)
+calc_loop:
+    cmp ecx, [esp + 8]    ; Compare loop counter with the size of the array
+    jge print_result      ; If we've calculated the required number of elements, jump to printing
 
-    mov eax, ebx
-    sub eax, esi
-    mov ecx, [edi + eax*4]
-    add ebx, ecx
+    ; Calculate the current element
+    mov eax, [esp + 4 + ecx*4 - 4]
+    mov ebx, [esp + 4 + ecx*4 - 8]
+    mov edx, [esp + 4 + ecx*4 - 12]
+    
+    ; Calculate the next element based on the given formula
+    sub ecx, eax
+    mov esi, ecx
+    add ecx, eax
+    dec ecx
+    sub ecx, ebx
+    mov edi, ecx
+    add ecx, ebx
+    sub ecx, 2
+    sub ecx, edx
+    mov ebp, ecx
+    add ecx, 2
+    add ecx, edx
 
-    ; Сохраняем новое число на стеке
-    mov [esp], esi
-    sub esp, 4
+    mov eax, [esp + 4 + esi*4]
+    mov ebx, [esp + 4 + edi*4]
+    mov edx, [esp + 4 + ebp*4]
 
-    dec ecx             ; уменьшаем счётчик вывода чисел
-    jnz calculate_next  ; если не выведены все числа, продолжаем
+    add eax, ebx
+    add eax, edx
 
-    ; Выводим последние 10 чисел с вершины стека на консоль
-print_last_10:
-    mov eax, [esp]      ; берём число с вершины стека
-    mov ebx, 1
-    mov ecx, output_format
-    int 0x80
+    ; Store the result in the array
+    mov [esp + 4 + ecx*4], eax
 
-    add esp, 4          ; перемещаем указатель на следующее число на стеке
-    dec edx             ; уменьшаем счётчик выведенных чисел
-    jnz print_last_10   ; если не выведены все числа, продолжаем
+    inc ecx
+    jmp calc_loop
 
-exit:
-    mov eax, 1
-    xor ebx, ebx
-    int 0x80
+print_result:
+    ; Print the last 10 elements
+    mov ecx, [esp + 8] - 10  ; Start printing from the (size - 10)th element
+print_loop:
+    cmp ecx, [esp + 8]        ; Print 10 elements
+    jge end_printing
+
+    ; Get the current element
+    mov eax, [esp + 4 + ecx*4]
+
+    ; Print the element
+    push eax
+    push dword fmt
+    call printf
+    add esp, 8                ; Clean up the stack
+
+    inc ecx
+    jmp print_loop
+
+end_printing:
+    ret
+
+section .data
+    fmt db "%d ", 0
