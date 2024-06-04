@@ -46,22 +46,16 @@ int main(int ac, char *av[])
     return 0;
 }
 
-Компилируйте программу на C:
-
-ш
-
-Копировать код
-gcc -c -o sin_program.o sin_program.c
-Компилируйте программу на ассемблере NASM:
-
-ш
-
+gcc -c -o sin_program.o sin_program.c -no-pie
+2. Компиляция файла sin_program.asm
+sh
 Копировать код
 nasm -f elf64 -o sin_program_asm.o sin_program.asm
-Соберите объектные файлы:
-
-ш
-
+3. Сборка и компоновка без режима PIE
+sh
 Копировать код
-gcc -o sin_program sin_program.o sin_program_asm.o -lm
-Эта программа вычисляет и выводит значения синуса для углов от 0 до 360 градусов с шагом в 1 градус.
+gcc -o sin_program sin_program.o sin_program_asm.o -no-pie -lm
+Запуск программы
+sh
+Копировать код
+./sin_program
