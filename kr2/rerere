@@ -1,10 +1,8 @@
 section .data
     pi dq 3.14159265358979323846264338327950288419716939937510
     degree_to_rad dq 0.01745329251994329576923690768488612713442871888542 ; pi / 180
-
-section .bss
-    alpha resq 1
-    value resq 1
+    alpha dq 0
+    value dq 0
 
 section .text
     global getsin
