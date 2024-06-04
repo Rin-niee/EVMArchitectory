@@ -1,9 +1,3 @@
-
-
-fibo.o: warning: relocation in read-only section `.text'
-warning: creating DT_TEXTREL in a PIE
-
-
 section .bss
     t resd 10000      ; резервируем место для 10000 элементов массива t
 
@@ -34,22 +28,22 @@ compute_sequence:
     sub eax, ebx
     mov ebx, [t + eax * 4]
 
-    ; t[n-1 - t[n-2]]
+    ; t[n - 1 - t[n - 2]]
     mov eax, ecx
     sub eax, 1
-    mov edi, [t + eax * 4]
-    sub eax, 1
-    mov esi, [t + eax * 4]
-    sub eax, esi
-    add ebx, [t + eax * 4]
-
-    ; t[n-2 - t[n-3]]
-    mov eax, ecx
-    sub eax, 2
     mov esi, [t + eax * 4]
     sub eax, 1
     mov edi, [t + eax * 4]
     sub eax, edi
+    add ebx, [t + eax * 4]
+
+    ; t[n - 2 - t[n - 3]]
+    mov eax, ecx
+    sub eax, 2
+    mov edi, [t + eax * 4]
+    sub eax, 1
+    mov esi, [t + eax * 4]
+    sub eax, esi
     add ebx, [t + eax * 4]
 
     ; сохраняем результат
@@ -76,13 +70,3 @@ print_last_10:
     ; завершение программы
     xor eax, eax
     ret
-
-nasm -f elf32 sequence.asm -o sequence.o
-Скомпилируйте с помощью GCC, чтобы создать исполняемый файл:
-sh
-Копировать код
-gcc -m32 sequence.o -o sequence -lc
-Запустите исполняемый файл:
-sh
-Копировать код
-./sequence
