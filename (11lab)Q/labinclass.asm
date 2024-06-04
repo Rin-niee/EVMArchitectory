@@ -1,4 +1,82 @@
 section .data
+    a_times: times 10000 dq 0    ; массив для хранения чисел
+    output_format db "%d ", 0      ; формат вывода для чисел
+
+section .text
+    global _start
+
+_start:
+    ; Заполнение массива согласно начальным значениям
+    mov rsi, a_times                ; адрес массива
+    mov ecx, 10000                  ; количество чисел
+    mov rax, 1                      ; начальное значение a[1]
+    mov qword [rsi], rax            ; сохраняем a[1]
+    mov rax, 2                      ; начальное значение a[2]
+    mov qword [rsi + 8], rax        ; сохраняем a[2]
+    mov rax, 3                      ; начальное значение a[3]
+    mov qword [rsi + 16], rax       ; сохраняем a[3]
+
+calc_loop:
+    cmp ecx, 10000                  ; проверяем, достигли ли конца массива
+    je print_last_ten              ; если достигли, переходим к выводу последних 10 чисел
+
+    mov rdi, rcx                    ; сохраняем текущий индекс в rdi
+    dec rdi                         ; вычисляем n - 1
+    mov rdx, [rsi + rdi * 8]        ; загружаем t[n-1] в rdx
+    mov rdi, rdx                    ; сохраняем t[n-1] в rdi
+
+    mov rax, rcx                    ; сохраняем текущий индекс в rax
+    sub rax, rdi                    ; вычисляем n - t[n-1]
+    mov rdi, rax                    ; сохраняем n - t[n-1] в rdi
+    mov rax, [rsi + rdi * 8]        ; загружаем t[n - t[n-1]] в rax
+
+    mov rdi, rcx                    ; сохраняем текущий индекс в rdi
+    sub rdi, 2                      ; вычисляем n - 2
+    mov rbx, [rsi + rdi * 8]        ; загружаем t[n-2] в rbx
+    mov rdi, rbx                    ; сохраняем t[n-2] в rdi
+
+    mov rcx, rbx                    ; сохраняем t[n-2] в rcx
+    sub rcx, 3                      ; вычисляем n - t[n-2]
+    mov rdi, rcx                    ; сохраняем n - t[n-2] в rdi
+    mov rcx, [rsi + rdi * 8]        ; загружаем t[n - t[n-2]] в rcx
+
+    add rax, rcx                    ; складываем t[n - t[n-1]] и t[n - t[n-2]]
+    add rax, rdx                    ; складываем результат с t[n-1]
+    mov [rsi + rcx * 8], rax        ; сохраняем результат в массиве
+
+    inc ecx                         ; увеличиваем счетчик чисел
+    jmp calc_loop
+
+print_last_ten:
+    mov rsi, a_times                ; адрес массива
+    mov rsi, [rsi + 9990 * 8]       ; адрес последних 10 чисел в массиве
+    mov ecx, 10                     ; количество чисел для вывода
+
+print_loop:
+    mov rax, 1                      ; используем вызов syscall для вывода на консоль
+    mov rdi, 1                      ; дескриптор файла (stdout)
+    mov rdx, 1                      ; количество байт для вывода (в данном случае 1 число)
+    mov rax, 60                     ; syscall для выхода из программы
+    syscall
+
+    dec ecx                         ; уменьшаем счетчик чисел для вывода
+    cmp ecx, 0                      ; проверяем, закончили ли вывод всех чисел
+    je exit_program
+    mov rax, rsi                    ; загружаем следующее число для вывода
+    sub rsi, 8                      ; переходим к предыдущему числу
+    jmp print_loop
+
+exit_program:
+    mov rax, 60                     ; syscall для выхода из программы
+    xor rdi, rdi                    ; код возврата 0
+    syscall
+
+
+
+
+
+
+section .data
     n equ 10000
     array times n dd 0
     format db "%d ", 0
