@@ -27,6 +27,8 @@ getsin:
     ; Return to caller
     ret
 
+#include <stdio.h>
+
 extern double alpha, value;
 void getsin();
 
@@ -47,17 +49,17 @@ int main(int ac, char *av[])
 ш
 
 Копировать код
-gcc -o sin_program sin_program.c sin_program.o -lm
+gcc -c -o sin_program.o sin_program.c
 Компилируйте программу на ассемблере NASM:
 
 ш
 
 Копировать код
-nasm -f elf64 sin_program.asm
+nasm -f elf64 -o sin_program_asm.o sin_program.asm
 Соберите объектные файлы:
 
 ш
 
 Копировать код
-gcc -o sin_program sin_program.c sin_program.o -lm
+gcc -o sin_program sin_program.o sin_program_asm.o -lm
 Эта программа вычисляет и выводит значения синуса для углов от 0 до 360 градусов с шагом в 1 градус.
