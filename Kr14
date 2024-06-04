@@ -98,3 +98,60 @@ print_memory:
 
     ret               ; возвращаемся из подпрограммы
 
+
+
+
+
+
+
+print_memory:
+    mov rdi, 1         ; файловый дескриптор для stdout
+
+print_loop:
+    mov rax, 1         ; системный вызов для write
+    mov rsi, [rsi]     ; загружаем значение байта из памяти
+    mov dl, 4          ; длина выводимого значения (включая пробел)
+    call print_hex     ; выводим значение байта в шестнадцатеричном формате
+
+    mov rax, 1         ; системный вызов для write
+    mov rsi, space     ; выводим пробел
+    mov rdx, 1         ; длина символа пробела
+    syscall
+
+    inc rsi            ; переходим к следующему байту
+    dec rcx            ; уменьшаем счетчик
+    jnz print_loop     ; повторяем цикл, пока не выведем все байты
+
+    ; выводим символ новой строки
+    mov rax, 1         ; системный вызов для write
+    mov rsi, newline   ; адрес символа новой строки
+    mov rdx, 1         ; длина символа новой строки
+    syscall
+
+    ret                ; возвращаемся из подпрограммы
+
+print_hex:
+    ; Преобразование байта в шестнадцатеричное значение
+    mov cl, 4
+.hex_loop:
+    rol rsi, cl        ; сдвигаем старшие 4 бита в младшие позиции
+    and sil, 0x0F      ; оставляем младшие 4 бита
+    cmp sil, 10        ; если значение >= 10, добавляем 'A' - 10
+    jl .skip_addition
+    add sil, 7
+.skip_addition:
+    add sil, '0'       ; конвертируем в ASCII
+    mov [hex_buffer], sil ; сохраняем ASCII символ
+    mov rax, 1         ; системный вызов для write
+    mov rsi, hex_buffer ; адрес ASCII символа
+    mov rdx, 1         ; длина символа
+    syscall
+    dec cl
+    jnz .hex_loop
+    ret
+
+section .data
+    newline db 10       ; символ новой строки
+    space db ' '        ; пробел
+    hex_buffer db 1     ; буфер для преобразования байта в шестнадцатеричное значение
+
