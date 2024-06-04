@@ -10,6 +10,9 @@
 collect2: error: ld returned 1 exit status
 
 
+sudo apt-get update
+sudo apt-get install gcc-multilib g++-multilib libc6-dev-i386
+
 
 
 section .bss
