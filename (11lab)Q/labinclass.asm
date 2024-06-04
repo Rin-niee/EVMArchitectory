@@ -1,4 +1,9 @@
-ection .data
+fiboo.o: warning: relocation in read-only section `.text'
+/usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+
+
+
+section .data
     n equ 10000
     array times n dd 0
     format db "%d ", 0
