@@ -6,7 +6,7 @@ collect2: error: ld returned 1 exit status
 section .data
     n equ 10000
     array times n dd 0
-    format db "%d", 0
+    format db "%d ", 0
 
 section .bss
 
@@ -67,6 +67,6 @@ print_loop:
     loop print_loop
 
     ; Exit the program
-    mov eax, 60
-    xor edi, edi
-    syscall
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
