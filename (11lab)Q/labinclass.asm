@@ -12,7 +12,7 @@ section .text
 _start:
     ; Заполнение массива согласно начальным значениям
     mov rsi, a_times                ; адрес массива
-    mov ecx, 3                      ; начальный индекс
+    mov rcx, 3                      ; начальный индекс
     mov rax, 1                      ; начальное значение a[1]
     mov qword [rsi], rax            ; сохраняем a[1]
     mov rax, 2                      ; начальное значение a[2]
@@ -21,34 +21,36 @@ _start:
     mov qword [rsi + 16], rax       ; сохраняем a[3]
 
 calc_loop:
-    cmp ecx, 10000                  ; проверяем, достигли ли конца массива
+    cmp rcx, 10000                  ; проверяем, достигли ли конца массива
     jge print_last_ten              ; если достигли, переходим к выводу последних 10 чисел
 
-    mov rdi, ecx                    ; сохраняем текущий индекс в rdi
+    mov rdi, rcx                    ; сохраняем текущий индекс в rdi
     dec rdi                         ; вычисляем n - 1
     mov rdx, [rsi + rdi * 8]        ; загружаем t[n-1] в rdx
     mov rdi, rdx                    ; сохраняем t[n-1] в rdi
 
-    mov rax, ecx                    ; сохраняем текущий индекс в rax
+    mov rax, rcx                    ; сохраняем текущий индекс в rax
     sub rax, rdi                    ; вычисляем n - t[n-1]
     mov rdi, rax                    ; сохраняем n - t[n-1] в rdi
     mov rax, [rsi + rdi * 8]        ; загружаем t[n - t[n-1]] в rax
 
-    mov rdi, ecx                    ; сохраняем текущий индекс в rdi
+    mov rdi, rcx                    ; сохраняем текущий индекс в rdi
     sub rdi, 2                      ; вычисляем n - 2
     mov rbx, [rsi + rdi * 8]        ; загружаем t[n-2] в rbx
     mov rdi, rbx                    ; сохраняем t[n-2] в rdi
 
-    mov rcx, rbx                    ; сохраняем t[n-2] в rcx
-    sub rcx, 1                      ; вычисляем n - t[n-2]
-    mov rdi, rcx                    ; сохраняем n - t[n-2] в rdi
-    mov rcx, [rsi + rdi * 8]        ; загружаем t[n - t[n-2]] в rcx
+    mov rdx, rcx                    ; сохраняем текущий индекс в rdx
+    sub rdx, rbx                    ; вычисляем n - t[n-2]
+    mov rcx, [rsi + rdx * 8]        ; загружаем t[n - t[n-2]] в rcx
 
     add rax, rcx                    ; складываем t[n - t[n-1]] и t[n - t[n-2]]
     add rax, rdx                    ; складываем результат с t[n-1]
-    mov [rsi + ecx * 8], rax        ; сохраняем результат в массиве
 
-    inc ecx                         ; увеличиваем счетчик чисел
+    ; Записываем результат в массив используя правильные регистры
+    mov rdx, rcx                    ; сохраняем индекс
+    mov [rsi + rdx * 8], rax        ; сохраняем результат в массиве
+
+    inc rcx                         ; увеличиваем счетчик чисел
     jmp calc_loop
 
 print_last_ten:
@@ -65,7 +67,7 @@ print_loop:
     mov rax, 1                      ; syscall write
     mov rdi, 1                      ; дескриптор файла (stdout)
     mov rsi, num_str                ; буфер строки
-    mov rdx, rax                    ; длина строки
+    mov rdx, 20                     ; максимальная длина строки
     syscall
 
     add rsi, 8                      ; переходим к следующему числу для вывода
