@@ -5,7 +5,7 @@ warning: creating DT_TEXTREL in a PIE
 
 
 section .bss
-    t resd 10000 ; резервируем место для 10000 элементов массива t
+    t resd 10000      ; резервируем место для 10000 элементов массива t
 
 section .data
     format db "%d ", 0 ; формат для printf
@@ -21,27 +21,40 @@ main:
     mov dword [t+8], 1
 
     ; цикл для вычисления последовательности
-    mov ecx, 3 ; начинаем с t[3]
-    mov edx, 10000 ; количество элементов
+    mov ecx, 3        ; начинаем с t[3]
+    mov edx, 10000    ; количество элементов
+
 compute_sequence:
+    push ecx          ; сохраним текущее значение ecx на стек
+
+    ; t[n - t[n-1]]
     mov eax, ecx
     sub eax, 1
-    mov ebx, [t + eax * 4] ; t[n-1]
-    sub ecx, ebx
-    mov ebx, [t + ecx * 4] ; t[n - t[n-1]]
-    add eax, ebx
+    mov ebx, [t + eax * 4]
+    sub eax, ebx
+    mov ebx, [t + eax * 4]
 
-    mov ecx, eax
-    sub ecx, 1
-    mov ebx, [t + ecx * 4] ; t[n-1 - t[n-2]]
-    add eax, ebx
+    ; t[n-1 - t[n-2]]
+    mov eax, ecx
+    sub eax, 1
+    mov edi, [t + eax * 4]
+    sub eax, 1
+    mov esi, [t + eax * 4]
+    sub eax, esi
+    add ebx, [t + eax * 4]
 
-    mov ecx, eax
-    sub ecx, 1
-    mov ebx, [t + ecx * 4] ; t[n-2 - t[n-3]]
-    add eax, ebx
+    ; t[n-2 - t[n-3]]
+    mov eax, ecx
+    sub eax, 2
+    mov esi, [t + eax * 4]
+    sub eax, 1
+    mov edi, [t + eax * 4]
+    sub eax, edi
+    add ebx, [t + eax * 4]
 
-    mov [t + ecx * 4], eax ; t[n] = результат
+    ; сохраняем результат
+    pop ecx
+    mov [t + ecx * 4], ebx
 
     inc ecx
     cmp ecx, edx
