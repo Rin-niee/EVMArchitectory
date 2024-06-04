@@ -1,3 +1,24 @@
+section .data
+    n equ 10000
+    array times n dd 0
+    format db "%d ", 0
+
+section .bss
+
+section .text
+    extern printf
+
+global _start
+
+_start:
+    ; Ваш код алгоритма здесь
+
+    ; Exit the program
+    mov eax, 0x1        ; syscall number for exit
+    xor ebx, ebx        ; exit code 0
+    int 0x80            ; make syscall
+
+
 fiboo.o: warning: relocation in read-only section `.text'
 /usr/bin/ld: warning: creating DT_TEXTREL in a PIE
 
