@@ -1,75 +1,59 @@
-section .text
-global calculate_and_print
-
-calculate_and_print:
-    ; Arguments:
-    ; [esp + 4] = pointer to the array
-    ; [esp + 8] = size of the array
-
-    ; Initialize the first three elements of the array
-    mov dword [esp + 4], 1
-    mov dword [esp + 8], 1
-    mov dword [esp + 12], 1
-
-    ; Calculate the rest of the array
-    mov ecx, 3            ; Start from the 4th element (index 3)
-calc_loop:
-    cmp ecx, [esp + 8]    ; Compare loop counter with the size of the array
-    jge print_result      ; If we've calculated the required number of elements, jump to printing
-
-    ; Calculate the current element
-    mov eax, [esp + 4 + ecx*4 - 4]
-    mov ebx, [esp + 4 + ecx*4 - 8]
-    mov edx, [esp + 4 + ecx*4 - 12]
-    
-    ; Calculate the next element based on the given formula
-    sub ecx, eax
-    mov esi, ecx
-    add ecx, eax
-    dec ecx
-    sub ecx, ebx
-    mov edi, ecx
-    add ecx, ebx
-    sub ecx, 2
-    sub ecx, edx
-    mov ebp, ecx
-    add ecx, 2
-    add ecx, edx
-
-    mov eax, [esp + 4 + esi*4]
-    mov ebx, [esp + 4 + edi*4]
-    mov edx, [esp + 4 + ebp*4]
-
-    add eax, ebx
-    add eax, edx
-
-    ; Store the result in the array
-    mov [esp + 4 + ecx*4], eax
-
-    inc ecx
-    jmp calc_loop
-
-print_result:
-    ; Print the last 10 elements
-    mov ecx, [esp + 8] - 10  ; Start printing from the (size - 10)th element
-print_loop:
-    cmp ecx, [esp + 8]        ; Print 10 elements
-    jge end_printing
-
-    ; Get the current element
-    mov eax, [esp + 4 + ecx*4]
-
-    ; Print the element
-    push eax
-    push dword fmt
-    call printf
-    add esp, 8                ; Clean up the stack
-
-    inc ecx
-    jmp print_loop
-
-end_printing:
-    ret
+section .bss
+    t resd 10000 ; резервируем место для 10000 элементов массива t
 
 section .data
-    fmt db "%d ", 0
+    format db "%d ", 0 ; формат для printf
+
+section .text
+    extern printf
+    global main
+
+main:
+    ; инициализируем первые три элемента массива
+    mov dword [t], 0
+    mov dword [t+4], 0
+    mov dword [t+8], 1
+
+    ; цикл для вычисления последовательности
+    mov ecx, 3 ; начинаем с t[3]
+    mov edx, 10000 ; количество элементов
+compute_sequence:
+    mov eax, ecx
+    sub eax, 1
+    mov ebx, [t + eax * 4] ; t[n-1]
+    sub ecx, ebx
+    mov ebx, [t + ecx * 4] ; t[n - t[n-1]]
+    add eax, ebx
+
+    mov ecx, eax
+    sub ecx, 1
+    mov ebx, [t + ecx * 4] ; t[n-1 - t[n-2]]
+    add eax, ebx
+
+    mov ecx, eax
+    sub ecx, 1
+    mov ebx, [t + ecx * 4] ; t[n-2 - t[n-3]]
+    add eax, ebx
+
+    mov [t + ecx * 4], eax ; t[n] = результат
+
+    inc ecx
+    cmp ecx, edx
+    jl compute_sequence
+
+    ; выводим последние 10 элементов
+    mov ecx, 9990
+print_last_10:
+    mov eax, [t + ecx * 4]
+    push eax
+    push format
+    call printf
+    add esp, 8
+
+    inc ecx
+    cmp ecx, 10000
+    jl print_last_10
+
+    ; завершение программы
+    xor eax, eax
+    ret
