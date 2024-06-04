@@ -1,87 +1,67 @@
-section .bss
-    t resd 10000      ; резервируем место для 10000 элементов массива t
-
 section .data
-    format db "%d ", 0 ; формат для printf
+    n equ 10000
+    array times n dd 0
+    format db "%d", 0
+
+section .bss
 
 section .text
     extern printf
-    global main
+    global _start
 
-main:
-    ; инициализируем первые три элемента массива
-    mov dword [t], 0
-    mov dword [t + 4], 0
-    mov dword [t + 8], 1
+_start:
+    ; Initialize the first three values
+    mov dword [array], 1       ; a[1] = 1
+    mov dword [array + 4], 2   ; a[2] = 2
+    mov dword [array + 8], 3   ; a[3] = 3
 
-    ; цикл для вычисления последовательности
-    mov ecx, 3        ; начинаем с t[3]
-    mov edx, 10000    ; количество элементов
-
-compute_sequence:
-    ; t[n - t[n-1]]
-    mov eax, ecx
-    sub eax, 1
-    mov ebx, [t + eax * 4]
-    sub eax, ebx
-    js skip1           ; пропустить, если результат отрицательный или выходит за границы
-    cmp eax, 0
-    jl skip1
-    cmp eax, 9999
-    jg skip1
-    mov ebx, [t + eax * 4]
-
-    ; t[n - 1 - t[n - 2]]
-    mov eax, ecx
-    sub eax, 1
-    mov esi, [t + eax * 4]
-    sub eax, 1
-    mov edi, [t + eax * 4]
-    sub eax, edi
-    js skip2           ; пропустить, если результат отрицательный или выходит за границы
-    cmp eax, 0
-    jl skip2
-    cmp eax, 9999
-    jg skip2
-    add ebx, [t + eax * 4]
-
-    ; t[n - 2 - t[n - 3]]
-    mov eax, ecx
-    sub eax, 2
-    mov edi, [t + eax * 4]
-    sub eax, 1
-    mov esi, [t + eax * 4]
-    sub eax, esi
-    js skip3           ; пропустить, если результат отрицательный или выходит за границы
-    cmp eax, 0
-    jl skip3
-    cmp eax, 9999
-    jg skip3
-    add ebx, [t + eax * 4]
-
-skip3:
-skip2:
-skip1:
-    ; сохраняем результат
-    mov [t + ecx * 4], ebx
-
+    ; Calculate the rest of the sequence
+    mov ecx, 3                 ; start with a[4]
+calc_loop:
     inc ecx
-    cmp ecx, edx
-    jl compute_sequence
+    cmp ecx, n
+    jg print_last_10
 
-    ; выводим последние 10 элементов
-    mov ecx, 9990
+    ; Calculate a[n] = a[n - a[n-1]] + a[n-1 - a[n-2]] + a[n-2 - a[n-3]]
+    mov eax, ecx
+    sub eax, 1
+    mov ebx, [array + eax*4]   ; a[n-1]
+    sub eax, ebx
+    mov ebx, [array + eax*4]   ; a[n - a[n-1]]
+
+    mov edx, ecx
+    sub edx, 2
+    mov esi, [array + edx*4]   ; a[n-2]
+    sub edx, esi
+    add ebx, [array + edx*4]   ; + a[n-1 - a[n-2]]
+
+    mov esi, ecx
+    sub esi, 3
+    mov edi, [array + esi*4]   ; a[n-3]
+    sub esi, edi
+    add ebx, [array + esi*4]   ; + a[n-2 - a[n-3]]
+
+    mov [array + ecx*4], ebx   ; store the result
+
+    jmp calc_loop
+
 print_last_10:
-    mov eax, [t + ecx * 4]
+    ; Print the last 10 numbers
+    mov ecx, 10
+    mov esi, n
+    sub esi, ecx
+
+print_loop:
+    mov eax, [array + esi*4]
     push eax
     push format
     call printf
     add esp, 8
 
-    inc ecx
-    cmp ecx, 10000
-    jl print_last_10
+    inc esi
+    loop print_loop
 
-    ; завершение программы
-    xor eax, eax
-    ret
+    ; Exit the program
+    mov eax, 60
+    xor edi, edi
+    syscall
