@@ -1,3 +1,8 @@
+архитектура i386 входного файла «fibo.o» несовместима с выходным i386:x86-64
+/usr/bin/ld: предупреждение: невозможно найти символ входа _start; используем значение по умолчанию 0000000000401000
+collect2: error: ld returned 1 exit status
+
+
 section .data
     n equ 10000
     array times n dd 0
