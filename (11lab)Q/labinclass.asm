@@ -57,3 +57,13 @@ print_last_10:
     ; завершение программы
     xor eax, eax
     ret
+
+nasm -f elf32 sequence.asm -o sequence.o
+Скомпилируйте с помощью GCC, чтобы создать исполняемый файл:
+sh
+Копировать код
+gcc -m32 sequence.o -o sequence -lc
+Запустите исполняемый файл:
+sh
+Копировать код
+./sequence
