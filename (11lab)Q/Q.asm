@@ -1,7 +1,7 @@
 %include "io64.inc"
 
 section .data
-    a_times: times 5 dq 0         ; массив для хранения чисел
+    a_times: times 10000 dq 0         ; массив для хранения чисел
     output_format db "%d ", 0         ; формат вывода для чисел
     newline db 10, 0                  ; символ новой строки
 
@@ -23,8 +23,9 @@ CMAIN:
     mov qword [rsi + 16], rax       ; сохраняем a[3]
 
 calc_loop:
-    cmp rcx, 5                  ; проверяем, достигли ли конца массива
-    jge print_last_ten              ; если достигли, переходим к выводу последних 10 чисел
+    cmp rcx, 10000                  ; проверяем, достигли ли конца массива
+    jge print_last_ten
+    push rcx                    ; если достигли, переходим к выводу последних 10 чисел
 
     mov rdi, rcx                    ; сохраняем текущий индекс в rdi
     dec rdi                         ; вычисляем n - 1
@@ -51,7 +52,7 @@ calc_loop:
     ; Записываем результат в массив используя правильные регистры
     mov rdx, rcx                    ; сохраняем индекс
     mov [rsi + rdx * 8], rax        ; сохраняем результат в массиве
-    
+    pop rcx
     inc rcx                         ; увеличиваем счетчик чисел 
     jmp calc_loop
 
@@ -86,13 +87,7 @@ print_loop:
     add rsi, 8                      ; переходим к следующему числу для вывода
     dec rcx                         ; уменьшаем счетчик чисел для вывода
     cmp rcx, 0
-    jle exit_program
     jnz print_loop                  ; повторяем цикл, если не закончили вывод
-
-exit_program:
-    mov rax, 60                     ; syscall для выхода из программы
-    xor rdi, rdi                    ; код возврата 0
-    syscall
 
 ; Функция для преобразования числа в строку
 ; Вход: rax - число
@@ -105,14 +100,15 @@ int_to_str:
     mov byte [rdi], 0               ; добавляем нулевой байт в конец строки
 
 convert_loop:
+    test rax, rax 
+    jz end_con_loop
     xor rdx, rdx                    ; очищаем rdx для div
     div rcx                         ; делим rax на 10, результат в rax, остаток в rdx
     add dl, '0'                     ; преобразуем остаток в символ
     dec rdi                         ; перемещаем указатель буфера влево
-    mov [rdi], dl                   ; сохраняем символ в буфер
-    test rax, rax                   ; проверяем, все ли цифры обработаны
-    jnz convert_loop                ; если не все, продолжаем цикл
-
+    mov [rdi], dl                   ; сохраняем символ в буфер               
+    jmp convert_loop                ; если не все, продолжаем цикл
+end_con_loop:
     mov rdx, rbx                    ; начальный адрес буфера
     sub rdx, rdi                    ; длина строки
     mov rsi, rdi                    ; конечный адрес буфера
